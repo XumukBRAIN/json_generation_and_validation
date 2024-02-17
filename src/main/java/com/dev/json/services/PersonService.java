@@ -5,6 +5,7 @@ import com.dev.json.PersonCreateRs;
 import com.dev.json.converters.Converter;
 import com.dev.json.enums.ErrorType;
 import com.dev.json.models.Person;
+import com.dev.json.repositories.PersonRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jackson.JsonLoader;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
@@ -37,6 +38,7 @@ public class PersonService {
 
     private final ObjectMapper mapper;
     private final Converter converter;
+    private final PersonRepository repository;
 
     private JsonSchema schemaRq;
 
@@ -58,20 +60,13 @@ public class PersonService {
             MDC.put("requestId", requestId);
             ProcessingReport report = schemaRq.validate(JsonLoader.fromString(request));
             if (!report.isSuccess()) {
-                log.error("Ошибка валидации запроса с идентификатором = {}", requestId);
-                StringBuilder validationErrorMessages = new StringBuilder();
-                for (ProcessingMessage processingMessage : report) {
-                    String message = processingMessage.getMessage();
-                    log.error(message);
-                    validationErrorMessages.append("\n Ошибка: ")
-                            .append(message);
-                }
-                return converter.createErrorRs(requestId, ErrorType.REQ_VALIDATION_ERROR, validationErrorMessages.toString());
+                return buildValidationErrorRs(requestId, report);
             }
             log.info("Валидация запроса с идентификатором {} прошла успешно", requestId);
 
             PersonCreateRq createRq = mapper.readValue(request, PersonCreateRq.class);
-            people.add(converter.buildPerson(createRq));
+            Person person = converter.buildPerson(createRq);
+            repository.save(person);
             log.info("Человек успешно создан. Идентификатор запроса = {}", requestId);
         } catch (IOException e) {
             log.error("Ошибка парсинга запроса c идентификатором = {}", requestId, e);
@@ -81,5 +76,17 @@ public class PersonService {
         }
 
         return converter.buildPersonCreateRs(requestId);
+    }
+
+    private PersonCreateRs buildValidationErrorRs(String requestId, ProcessingReport report) {
+        log.error("Ошибка валидации запроса с идентификатором = {}", requestId);
+        StringBuilder validationErrorMessages = new StringBuilder();
+        for (ProcessingMessage processingMessage : report) {
+            String message = processingMessage.getMessage();
+            log.error(message);
+            validationErrorMessages.append("\n Ошибка: ")
+                    .append(message);
+        }
+        return converter.createErrorRs(requestId, ErrorType.REQ_VALIDATION_ERROR, validationErrorMessages.toString());
     }
 }
