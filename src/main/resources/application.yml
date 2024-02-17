@@ -1,0 +1,3 @@
+json-schemas:
+  personCreateRqSchema: "/schema/PersonCreateRq.json"
+  personCreateRsSchema: "/schema/PersonCreateRs.json"
