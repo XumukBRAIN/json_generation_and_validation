@@ -43,7 +43,7 @@ public class JsonApplicationTest {
         Assertions.assertEquals(createRs, buildFailureResult());
     }
 
-    private static PersonCreateRs buildSuccessResult() {
+    private PersonCreateRs buildSuccessResult() {
         PersonCreateRs createRs = new PersonCreateRs();
         createRs.setRequestId("61f0c404-5cb3-11e7-907b-a6006ad3dba0");
         createRs.setStatus(SuccessResultType.PERSON_CREATED.getTitle());
@@ -51,7 +51,7 @@ public class JsonApplicationTest {
         return createRs;
     }
 
-    private static PersonCreateRs buildFailureResult() {
+    private PersonCreateRs buildFailureResult() {
         PersonCreateRs createRs = new PersonCreateRs();
         createRs.setRequestId("61f0c404-5cb3-11e7-907b-a6006ad3dba0");
         createRs.setStatus(ErrorType.REQ_VALIDATION_ERROR.getTitle());

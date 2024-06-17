@@ -20,8 +20,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Сервис по работе с людьми
@@ -30,11 +28,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PersonService {
-
-    /**
-     * mock database
-     */
-    private final List<Person> people = new ArrayList<>();
 
     private final ObjectMapper mapper;
     private final Converter converter;
