@@ -6,9 +6,9 @@ import com.dev.json.converters.Converter;
 import com.dev.json.enums.ErrorType;
 import com.dev.json.models.Person;
 import com.dev.json.repositories.PersonRepository;
+import com.dev.json.utils.Utility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jackson.JsonLoader;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
@@ -48,7 +48,7 @@ public class PersonService {
      * @param request   Тело запроса
      * @return Результат выполнения запроса
      */
-    public PersonCreateRs create(String requestId, String request) throws ProcessingException {
+    public PersonCreateRs create(String requestId, String request) {
         try {
             MDC.put("requestId", requestId);
             ProcessingReport report = schemaRq.validate(JsonLoader.fromString(request));
@@ -56,14 +56,17 @@ public class PersonService {
                 return buildValidationErrorRs(requestId, report);
             }
             log.info("Валидация запроса с идентификатором {} прошла успешно", requestId);
-
-            PersonCreateRq createRq = mapper.readValue(request, PersonCreateRq.class);
+            String parsedRq = Utility.parseRomanAge(request);
+            PersonCreateRq createRq = mapper.readValue(parsedRq, PersonCreateRq.class);
             Person person = converter.buildPerson(createRq);
             repository.save(person);
             log.info("Человек успешно создан. Идентификатор запроса = {}", requestId);
         } catch (IOException e) {
             log.error("Ошибка парсинга запроса c идентификатором = {}", requestId, e);
             return converter.createErrorRs(requestId, ErrorType.REQ_PARSE_ERROR, e.getMessage());
+        } catch (Exception e) {
+            log.error("Ошибка обработки запроса с идентификатором = {}", requestId, e);
+            return converter.createErrorRs(requestId, ErrorType.INTERNAL_ERROR, e.getMessage());
         } finally {
             MDC.clear();
         }

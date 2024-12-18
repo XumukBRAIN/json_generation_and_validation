@@ -2,7 +2,6 @@ package com.dev.json.controllers;
 
 import com.dev.json.services.PersonService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,10 @@ public class PersonController {
     private final ObjectMapper mapper;
 
     @PostMapping("/create")
-    public ResponseEntity<String> create(@RequestHeader String requestId, @RequestBody String request) throws IOException, ProcessingException {
+    public ResponseEntity<String> create(
+            @RequestHeader String requestId,
+            @RequestBody String request
+    ) throws IOException {
         log.info("Пришел запрос на создание человека, requestId = {}", requestId);
         return ResponseEntity.ok(
                 mapper.writeValueAsString(service.create(requestId, request))
